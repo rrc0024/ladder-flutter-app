@@ -8,8 +8,9 @@ import 'globals.dart' as globals;
 const String gradioAppLink = 'https://huggingface.co/spaces/rrc0024/ladder-gradio-app';
 
 // Function to send request to Gradio API
-Future<void> getPrediction(String userInput) async {
+Future<String> getPrediction(String userInput) async {
   final Uri url = Uri.parse('$gradioAppLink/predict');
+  String testResult = '';
 
   // Define the request body
   final Map<String, dynamic> requestBody = {
@@ -26,13 +27,19 @@ Future<void> getPrediction(String userInput) async {
   if (response.statusCode == 200) {
     // If the server returns a 200 OK response
     final Map<String, dynamic> result = jsonDecode(response.body);
-    globals.sampleResult = 'Result: $result';
+    testResult = 'Result: $result';
+    return testResult;
   } else {
     // If the server returns an error
-    globals.sampleResult = 'Failed to get prediction. Status code: ${response.statusCode}';
+    testResult = 'Failed to get prediction. Status code: ${response.statusCode}';
+    return testResult;
   }
 }
 
-void main() {
-  getPrediction('Say hello to my new friend, ${globals.sampleResponse}');
+Future<String> main () async {
+  String pred;
+  pred = await getPrediction('Say hello to my new friend, ${globals.sampleResponse}');
+  return pred;
 }
+
+var sampleResult = main();
