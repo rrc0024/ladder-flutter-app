@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'globals.dart' as globals;
+import 'api_request.dart' as api_request;
 
 void main() {
   runApp(const MyApp());
@@ -47,8 +48,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showInput() {
-    final inputText = _textController.text;
+    // final inputText = _textController.text;
+    const inputText = "what is 2+2";
     globals.sampleResponse = inputText;
+    globals.logger.info(globals.sampleResponse);
+    api_request.getPrediction(globals.sampleResponse);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('User input: $inputText. The response was ${globals.sampleResult}'),
