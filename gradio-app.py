@@ -1,7 +1,8 @@
 from openai import OpenAI
 import gradio as gr
+import os
 
-key = ""
+key = os.getenv('openai_api_key')
 
 
 def chat_with_gpt3(user_input, chat_history=[]):
