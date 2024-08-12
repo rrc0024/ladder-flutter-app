@@ -2,7 +2,7 @@ from openai import OpenAI
 import gradio as gr
 import os
 
-key = os.getenv('openai_api_key')
+key = os.getenv('OPENAI_API_KEY')
 
 
 def chat_with_gpt3(user_input, chat_history=[]):
@@ -34,4 +34,4 @@ iface = gr.Interface(
 )
 
 print("Launching Gradio interface")
-iface.launch(share=True, debug=True)
+iface.launch(server_name='192.168.1.33', server_port=7861, debug=True)

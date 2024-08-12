@@ -1,105 +1,113 @@
 import 'package:flutter/material.dart';
-import 'globals.dart' as globals;
-import 'api_request.dart' as api_request;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'ChatGPT Gradio Broker Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Seva Exchange AI-powered Profile Maker'),
+      home: ChatPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
+class ChatPage extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _ChatPageState createState() => _ChatPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  final TextEditingController _textController = TextEditingController();
+class _ChatPageState extends State<ChatPage> {
+  final TextEditingController _controller = TextEditingController();
+  String _response = '';
+  bool _isLoading = false;
 
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
+  final String apiEndpoint = 'http://192.168.1.33:7861/api/chat';
 
-  void _incrementCounter() {
+  Future<void> _sendRequest(String prompt) async {
     setState(() {
-      _counter++;
+      _isLoading = true;
     });
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiEndpoint),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'data': [prompt]
+        }), // Sending as array inside 'data' key
+      );
+
+      if (response.statusCode == 200) {
+        // Assuming the response is a list and we want to display the first item
+        List<dynamic> responseData = json.decode(response.body)['data'];
+        setState(() {
+          _response =
+              responseData.isNotEmpty ? responseData[0] : 'No response data';
+        });
+      } else {
+        print('Response Body: ${response.body}');
+        setState(() {
+          _response = 'Error: ${response.statusCode} ${response.reasonPhrase}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _response = 'Error: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
-  void _showInput() {
-    // final inputText = _textController.text;
-    const inputText = "what is 2+2";
-    globals.sampleResponse = inputText;
-    globals.logger.info(globals.sampleResponse);
-    api_request.getPrediction(globals.sampleResponse);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('User input: $inputText. The response was ${globals.sampleResult}'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  void _sendUserInput() {
+    String userInput = _controller.text.trim();
+    if (userInput.isNotEmpty) {
+      _sendRequest(userInput);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text('ChatGPT Gradio Broker Demo'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 20),
+          children: [
             TextField(
-              controller: _textController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Enter your name',
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Enter your question',
               ),
+              onSubmitted: (value) {
+                _sendUserInput();
+              },
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _showInput,
-              child: const Text('Show Input'),
+              onPressed: _isLoading ? null : _sendUserInput,
+              child: Text('Send'),
             ),
+            SizedBox(height: 20),
+            _isLoading ? CircularProgressIndicator() : Text(_response),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
   }
-} 
+}
