@@ -29,7 +29,7 @@ class _ChatPageState extends State<ChatPage> {
   String _response = '';
   bool _isLoading = false;
 
-  final String apiEndpoint = 'http://192.168.1.33:7861/api/chat';
+  final String apiEndpoint = 'https://interns.deepak.org/api/chat';
 
   Future<void> _sendRequest(String prompt) async {
     setState(() {
