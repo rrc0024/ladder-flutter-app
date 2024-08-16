@@ -1,5 +1,5 @@
 {
     "cmake.sourceDirectory": "C:/Users/rebec/Documents/GitHub/ladder-flutter-app/main_flutter_app/windows",
-    "dart.flutterSdkPath": "C:/Users/rebec/AppData/local/flutter",
+    "dart.flutterSdkPath": "~/Desktop/flutter",
     "cmake.configureOnOpen": true
 }
